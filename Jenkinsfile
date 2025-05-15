@@ -20,11 +20,9 @@ pipeline {
 
         stage('Run Flask App') {
             steps {
-                sh '''
-                    bash -c '
-                        . venv/bin/activate
-                        (python3 app.py > app.log 2>&1 &) && echo $! > flask.pid && disown
-                    '
+                sh '''                    
+                    . venv/bin/activate
+                    nohup python3 app.py > app.log 2>&1 &
                 '''
             }
         }
