@@ -22,7 +22,7 @@ pipeline {
             steps {
                 sh '''
                     . venv/bin/activate
-                    python3 app.py &
+                    nohup setsid python3 app.py > app.log 2>&1 < /dev/null &
                 '''
             }
         }
