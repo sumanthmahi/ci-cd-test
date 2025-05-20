@@ -2,11 +2,16 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "flask-cicd-app"
-        CONTAINER_NAME = "flask-cicd-app"
+        IMAGE_NAME = "ci-cd-test"
     }
 
     stages {
+	stage('Creating and changing a directory') {
+            steps {
+                sh 'mkdir ci-cd-test'
+		sh 'cd ci-cd-test'
+            }
+        }
         stage('Clone Repo') {
             steps {
                 git 'https://github.com/AdminVelesium/ci-cd-test'
@@ -19,18 +24,9 @@ pipeline {
             }
         }
 
-        stage('Stop & Remove Existing Container') {
-            steps {
-                sh '''
-                docker stop $CONTAINER_NAME || true
-                docker rm $CONTAINER_NAME || true
-                '''
-            }
-        }
-
         stage('Run Container') {
             steps {
-                sh 'docker run -d -p 5000:5000 --name $CONTAINER_NAME $IMAGE_NAME'
+                sh 'docker run -d -p 5000:5000 $IMAGE_NAME'
             }
         }
     }
