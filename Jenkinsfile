@@ -1,29 +1,36 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "ci-cd-test"
+        CONTAINER_NAME = "ci-cd-test"
+    }
+
     stages {
         stage('Clone Repo') {
             steps {
-                echo 'Cloning repo...'
+                git 'https://github.com/AdminVelesium/ci-cd-test'
             }
         }
 
-        stage('Set Up Python') {
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $IMAGE_NAME .'
+            }
+        }
+
+        stage('Stop & Remove Existing Container') {
             steps {
                 sh '''
-                    python3 -m venv venv
-                    . venv/bin/activate
-                    pip install flask
+                docker stop $CONTAINER_NAME || true
+                docker rm $CONTAINER_NAME || true
                 '''
             }
         }
 
-        stage('Run Flask App') {
+        stage('Run Container') {
             steps {
-                sh '''                    
-                    . venv/bin/activate
-                    nohup python3 app.py > app.log 2>&1 &
-                '''
+                sh 'docker run -d -p 5000:5000 --name $CONTAINER_NAME $IMAGE_NAME'
             }
         }
     }
