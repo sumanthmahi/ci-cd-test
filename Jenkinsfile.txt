@@ -1,26 +1,37 @@
-name: Build and Push to GHCR
+pipeline {
+    agent any
 
-on:
-  push:
-    branches: [main]
+    environment {
+        IMAGE_NAME = "flask-cicd-app"
+        CONTAINER_NAME = "flask-cicd-app"
+    }
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+    stages {
+        stage('Clone Repo') {
+            steps {
+                git 'https://github.com/AdminVelesium/ci-cd-test'
+            }
+        }
 
-    permissions:
-      contents: read
-      packages: write
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $IMAGE_NAME .'
+            }
+        }
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+        stage('Stop & Remove Existing Container') {
+            steps {
+                sh '''
+                docker stop $CONTAINER_NAME || true
+                docker rm $CONTAINER_NAME || true
+                '''
+            }
+        }
 
-      - name: Log in to GHCR
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-      - name: Build and Push Docker image
-        run: |
-          REPO_NAME=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          IMAGE_NAME=ghcr.io/${REPO_NAME}:latest
-          docker build -t $IMAGE_NAME .
-          docker push $IMAGE_NAME
+        stage('Run Container') {
+            steps {
+                sh 'docker run -d -p 5000:5000 --name $CONTAINER_NAME $IMAGE_NAME'
+            }
+        }
+    }
+}

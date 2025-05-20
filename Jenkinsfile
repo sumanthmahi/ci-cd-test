@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         IMAGE_NAME = "ci-cd-test"
-        CONTAINER_NAME = "ci-cd-test"
     }
 
     stages {
@@ -19,18 +18,9 @@ pipeline {
             }
         }
 
-        stage('Stop & Remove Existing Container') {
-            steps {
-                sh '''
-                docker stop $CONTAINER_NAME || true
-                docker rm $CONTAINER_NAME || true
-                '''
-            }
-        }
-
         stage('Run Container') {
             steps {
-                sh 'docker run -d -p 5000:5000 --name $CONTAINER_NAME $IMAGE_NAME'
+                sh 'docker run -d -p 5000:5000 $IMAGE_NAME'
             }
         }
     }
